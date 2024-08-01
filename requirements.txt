@@ -1,0 +1,12 @@
+annotated-types==0.7.0
+asgiref==3.8.1
+Django==4.2.14
+django-ninja==1.2.2
+gunicorn==22.0.0
+packaging==24.1
+psycopg2-binary==2.9.9
+pydantic==2.8.2
+pydantic_core==2.20.1
+python-dotenv==1.0.1
+sqlparse==0.5.1
+typing_extensions==4.12.2
