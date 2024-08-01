@@ -67,6 +67,7 @@ class Product(RaumBaseClass):
                 self.version = next_version
             except self.DoesNotExist:
                 self.version = 1
+        self.slug = f'{self.container.project.code}/{self.container.code}/{self.step.code}/{self.element.code}/{self.data_type.code}/{self.lod}/{self.layer}/{self.version}'
 
         super(Product, self).save(*args, **kwargs)
 
@@ -83,6 +84,7 @@ class Product(RaumBaseClass):
     status = models.ForeignKey(Status, on_delete=models.PROTECT)
     frame_range = models.JSONField(null=True, blank=True, default=dict)
     version = models.IntegerField(null=True, blank=True, default=0)
+    slug = models.CharField(max_length=4096, null=True, blank=True, editable=False, unique=True)
     metadata = models.JSONField(null=True, blank=True, default=dict)
     approved_at = models.DateTimeField(null=True, blank=True, editable=False)
     approved_by = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.SET_NULL)

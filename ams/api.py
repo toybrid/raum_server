@@ -369,7 +369,7 @@ def created_product_dependency(request, payload: ProductDenendencySchemaIn):
     dep_obj.save()
     return 201, dep_obj
 
-@router.get("/container-relation/{uid}", response={200: List[ContainerRelationSchema]}, auth=AuthBearer(), tags=['Container Relation'])
+@router.get("/product-dependency/{uid}", response={200: List[ContainerRelationSchema]}, auth=AuthBearer(), tags=['Product Dependency'])
 def get_product_dependencu(request, uid):
     """
     Retrieves a list of relationships between containers based on the provided from_container and relation_type.
