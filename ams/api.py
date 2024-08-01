@@ -1,4 +1,3 @@
-from pprint import pprint
 from typing import List
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -271,7 +270,6 @@ def create_product(request, payload: ProductSchema):
     tuple: A tuple containing the HTTP status code and the created product object.
            If an error occurs during the creation process, a 400 status code and an error message are returned.
     """
-    print(payload)
     container = get_object_or_404(Container, id=payload.container)
     step = get_object_or_404(Step, id=payload.step)
     data_type = get_object_or_404(DataType, id=payload.data_type)
@@ -358,10 +356,18 @@ def set_status(request, uid: str, status: str):
 
 @router.post("/product-dependency", response={201: ProductDenendencySchema}, auth=AuthBearer(), tags=['Product Dependency'])
 def created_product_dependency(request, payload: ProductDenendencySchemaIn):
-    print(payload)
+    """
+    Creates a new product dependency in the system.
+
+    Parameters:
+    request (Request): The incoming request object.
+    payload (ProductDenendencySchemaIn): The product dependency data to be created. This includes the product ID and a list of dependency filepaths.
+
+    Returns:
+    tuple: A tuple containing the HTTP status code (201) and the created product dependency object.
+    """
     product = get_object_or_404(Product, id=payload.product)
     dependencies = Product.objects.filter(filepath__in=payload.dependencies)
-    print(dependencies)
     dep_obj = ProductDependency.objects.create(product=product)
     dep_obj.dependencies.set(dependencies)
     dep_obj.created_by = request.auth
@@ -369,18 +375,18 @@ def created_product_dependency(request, payload: ProductDenendencySchemaIn):
     dep_obj.save()
     return 201, dep_obj
 
+
 @router.get("/product-dependency/{uid}", response={200: List[ContainerRelationSchema]}, auth=AuthBearer(), tags=['Product Dependency'])
 def get_product_dependencu(request, uid):
     """
-    Retrieves a list of relationships between containers based on the provided from_container and relation_type.
+    Retrieves a product dependency object based on the provided unique identifier.
 
     Parameters:
     request (Request): The incoming request object.
-    cid (str): The unique identifier of the from_container.
-    rid (str): The unique identifier of the relation_type.
+    uid (str): The unique identifier of the product dependency to be retrieved.
 
     Returns:
-    List[ContainerRelationSchema]: A list of relationship objects that match the provided from_container and relation_type.
+    ProductDependency: The product dependency object with the matching unique identifier.
     """
     relationship_obj = get_object_or_404(ProductDependency, id=uid)
     return relationship_obj
