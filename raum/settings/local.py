@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from helpers.utils import get_allowed_hosts
 
 load_dotenv()
 
@@ -27,8 +28,7 @@ SECRET_KEY = os.getenv('RAUM_SECRECT_KEY', None)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True 
-
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = get_allowed_hosts()
 
 
 # Application definition
