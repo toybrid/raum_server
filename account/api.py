@@ -1,4 +1,5 @@
 import os
+from typing import List
 from django.contrib.auth import authenticate
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.hashers import make_password
@@ -8,14 +9,15 @@ from .schemas import UserSchema, UserSchemaOut, TokenSchema, LoginSchema
 from helpers.schemas import ErrorSchema
 from .import utils
 from account.models import User
+from account.utils import AuthBearer
+from ninja.pagination import paginate
+from helpers.utils import build_filters
 
 router = Router()
 
 @router.post("/register-user", response={201: UserSchemaOut}, tags=['auth'])
 def register(request, user_data: UserSchema):
-    print(user_data)
     if utils.verify_email_domains(user_data.email):
-        print('----------------------------------------------------------------')
         user = User.objects.create(
             username=user_data.username,
             email=user_data.email,
@@ -39,3 +41,11 @@ def login(request, payload: LoginSchema):
     if user:
         token = utils.get_or_create_token(user)
         return token
+
+@router.get("/get-users", response={200:List[UserSchemaOut]}, auth=AuthBearer(), tags=['User'])
+@paginate
+def get_users(request):
+    query_params = build_filters(request.GET)
+    if query_params:
+        return User.objects.filter(**query_params)
+    return User.objects.all()

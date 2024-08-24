@@ -34,73 +34,73 @@ classDiagram
     class RaumBaseClass{
         + datetime created_at
         + datetime modified_at
-        + created_by
-        + modified_by
-        + active
+        + FK created_by
+        + FK modified_by
+        + bool active
     }
     class Project{
-        + code
-        + label
-        + client_name
+        + str code
+        + str label
+        + str client_name
     }
     class Container{
         + project
-        + code
-        + client_name
-        + container_type
-        + frame_range
+        + str code
+        + str client_name
+        + FK container_type
+        + dict frame_range
     }
     class Product{
-        + container
-        + step
-        + element
-        + data_type
-        + lod
-        + layer
-        + task
-        + filepath
-        + extension
-        + status
-        + frame_range
-        + version
-        + slug
-        + metadata
-        + approved_at
-        + approved_by
+        + FK container
+        + FK step
+        + FK element
+        + FK data_type
+        + str lod
+        + str layer
+        + str task
+        + str filepath
+        + str extension
+        + FK status
+        + dict frame_range
+        + int version
+        + str slug
+        + dict metadata
+        + datetime approved_at
+        + FK approved_by
         + save()
     }
     class ContainerRelationship{
-        + from_container
-        + relation_type
-        + to_containers
+        + FK from_container
+        + FK relation_type
+        + MTM to_containers
     }
     class ProductDependency{
-        + product
-        + denpendencies
+        + FK product
+        + MTM denpendencies
     }
     class Status{
-        + code
-        + label
+        + str code
+        + str label
     }
     class Step{
-        + code
-        + label
+        + str code
+        + str label
     }
     class Element{
-        + code
-        + label
+        + str code
+        + str label
     }
     class DataType{
-        + code
-        + label
+        + str code
+        + str label
     }
     class RelationType{
-        + code
-        + label
+        + str code
+        + str label
     }
     class ContainerType{
-        + code
-        + label
+        + str code
+        + str label
     }
     Project --> Container
     Container --> Product
