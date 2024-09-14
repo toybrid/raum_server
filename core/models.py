@@ -53,3 +53,11 @@ class RelationType(RaumBaseClass):
 
     def __str__(self) -> str:
         return self.label
+    
+class BundleType(RaumBaseClass):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    code = models.CharField(max_length=64, unique=True)
+    label = models.CharField(max_length=64)
+
+    def __str__(self) -> str:
+        return self.label

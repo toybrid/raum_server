@@ -1,7 +1,7 @@
 import uuid
 from django.db import models
 from django.conf import settings
-from core.models import ContainerType, Element, Status, Step, DataType, RelationType
+from core.models import ContainerType, Element, Status, Step, DataType, RelationType, BundleType
 
 from helpers.model_base import RaumBaseClass
 
@@ -51,7 +51,7 @@ class Product(RaumBaseClass):
         verbose_name_plural = 'Products'
 
     def __str__(self) -> str:
-        return f'{self.container} {self.step} {self.element} {self.data_type}'
+        return self.slug
 
     def save(self, *args, **kwargs):
         if not self.version:
@@ -61,7 +61,8 @@ class Product(RaumBaseClass):
                                                     step = self.step,
                                                     element = self.element,
                                                     data_type = self.data_type,
-                                                    layer = self.layer
+                                                    layer = self.layer,
+                                                    lod=self.lod
                                                     ).latest('created_at')
                 next_version = latest_instance.version + 1
                 self.version = next_version
@@ -93,3 +94,30 @@ class ProductDependency(RaumBaseClass):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     product = models.OneToOneField(Product, on_delete=models.CASCADE)
     dependencies = models.ManyToManyField(Product, related_name='%(class)s_products', blank=True)
+
+class Bundle(RaumBaseClass):
+    class Meta:
+        unique_together = ('container','bundle_type','version')
+    def save(self, *args, **kwargs):
+        if not self.version or self.version==0:
+            try:
+                latest_instance = Bundle.objects.filter(
+                                                    container = self.container,
+                                                    bundle_type = self.bundle_type,
+                                                    ).latest('created_at')
+                next_version = latest_instance.version + 1
+                self.version = next_version
+            except self.DoesNotExist:
+                self.version = 1
+        self.slug = f'{self.container.project.code}/{self.container.code}/{self.bundle_type.code}/{self.version}'
+
+        super(Bundle, self).save(*args, **kwargs)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    container = models.ForeignKey(Container, on_delete=models.CASCADE)
+    bundle_type = models.ForeignKey(BundleType, on_delete=models.SET_NULL, null=True)
+    status = models.ForeignKey(Status, on_delete=models.SET_NULL, null=True)
+    version = models.IntegerField(null=True, blank=True, default=0)
+    slug = models.CharField(max_length=4096, null=True, blank=True, editable=False, unique=True)
+    products = models.ManyToManyField(Product, related_name='%(class)s_products', blank=True)
+    approved_at = models.DateTimeField(null=True, blank=True, editable=False)
+    approved_by = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.SET_NULL)

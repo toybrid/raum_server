@@ -1,5 +1,5 @@
 from django.contrib import admin
-from . models import ContainerType, Status, Element, DataType, Step, RelationType
+from . models import ContainerType, Status, Element, DataType, Step, RelationType, BundleType
 
 
 class ContainerTypeAdmin(admin.ModelAdmin):
@@ -20,6 +20,9 @@ class StepAdmin(admin.ModelAdmin):
 class RelationTypeAdmin(admin.ModelAdmin):
     list_display = ['id','code','label', 'modified_at']
 
+class BundleTypeAdmin(admin.ModelAdmin):
+    list_display = ['id','code','label', 'modified_at']
+
 
 admin.site.register(ContainerType, ContainerTypeAdmin)
 admin.site.register(Status, StatusAdmin)
@@ -27,3 +30,4 @@ admin.site.register(Element, ElementAdmin)
 admin.site.register(DataType, DataTypeAdmin)
 admin.site.register(Step, StepAdmin)
 admin.site.register(RelationType, RelationTypeAdmin)
+admin.site.register(BundleType, BundleTypeAdmin)

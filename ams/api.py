@@ -3,15 +3,13 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from ninja import Router
 from ninja.pagination import paginate
-from ams.models import Project, Container, ContainerRelation, Product, ProductDependency
-from core.models import ContainerType, RelationType, Step, Element, DataType, Status
+from ams.models import Project, Container, ContainerRelation, Product, ProductDependency, Bundle
+from core.models import ContainerType, RelationType, Step, Element, DataType, Status, BundleType
 from ams.schemas import (
                     ProjectSchema, ContainerSchema, 
-                    ContainerRelationSchema, ProductSchema, 
-                    ProductDenendencySchema, ProductDenendencySchemaIn
+                    ContainerRelationSchema, ProductSchema, ContainerRelationSchemaOut,
+                    ProductDependencySchema, ProductDependencySchemaIn, BundleSchema, BundleSchemaOut
                     )
-from account.models import User
-from helpers.schemas import ErrorSchema
 from helpers.utils import build_filters
 from account.utils import AuthBearer
 
@@ -33,14 +31,11 @@ def create_project(request, payload: ProjectSchema):
     tuple: A tuple containing the HTTP status code and the created project object.
            If an error occurs during the creation process, a 400 status code and an error message are returned.
     """
-    # try:
     project = Project.objects.create(**payload.dict())
     project.created_by = request.auth
     project.modified_by = request.auth
     project.save()
     return 201, project
-    # except Exception as e:
-    #     return 400, {'message': str(e)}
 
 
 @router.patch("/project/{uid}", response={200:ProjectSchema}, auth=AuthBearer(), tags=['Project'])
@@ -179,7 +174,7 @@ def get_container_by_code(request, code):
 
 # -------------------------------- Container Relation --------------------------------
 
-@router.post("/container-relation", response={201: ContainerRelationSchema}, auth=AuthBearer(), tags=['Container Relation'])
+@router.post("/container-relation", response={201: ContainerRelationSchemaOut}, auth=AuthBearer(), tags=['Container Relation'])
 def create_container_realtion(request, payload: ContainerRelationSchema):
     """
     Creates a new relationship between containers.
@@ -215,7 +210,7 @@ def create_container_realtion(request, payload: ContainerRelationSchema):
     return 201, relationship_obj
 
 
-@router.patch("/container-relation/{uid}", response={200: ContainerRelationSchema}, auth=AuthBearer(), tags=['Container Relation'])
+@router.patch("/container-relation/{uid}", response={200: ContainerRelationSchemaOut}, auth=AuthBearer(), tags=['Container Relation'])
 def update_container_realtion(request, uid, payload: ContainerRelationSchema):
     """
     Updates an existing relationship between containers.
@@ -236,14 +231,14 @@ def update_container_realtion(request, uid, payload: ContainerRelationSchema):
     return relationship_obj
 
 
-@router.get("/container-relation/{cid}/{rid}", response={200: List[ContainerRelationSchema]}, auth=AuthBearer(), tags=['Container Relation'])
+@router.get("/container-relation/{cid}/{rid}", response={200: List[ContainerRelationSchemaOut]}, auth=AuthBearer(), tags=['Container Relation'])
 def get_container_relations(request, cid, rid):
     """
     Retrieves a list of relationships between containers based on the provided from_container and relation_type.
 
     Parameters:
-    request (Request): The incoming request object.
-    cid (str): The unique identifier of the from_container.
+    request (Request): The incoming request object.\n
+    cid (str): The unique identifier of the from_container.\n
     rid (str): The unique identifier of the relation_type.
 
     Returns:
@@ -270,17 +265,12 @@ def create_product(request, payload: ProductSchema):
     tuple: A tuple containing the HTTP status code and the created product object.
            If an error occurs during the creation process, a 400 status code and an error message are returned.
     """
-    container = get_object_or_404(Container, id=payload.container)
-    step = get_object_or_404(Step, id=payload.step)
-    data_type = get_object_or_404(DataType, id=payload.data_type)
-    status = get_object_or_404(Status, code='rgsr')
-    element = get_object_or_404(Element, id=payload.element)
     payload_dict = payload.dict()
-    payload_dict['container'] = container
-    payload_dict['step'] = step
-    payload_dict['data_type'] = data_type
-    payload_dict['status'] = status
-    payload_dict['element'] = element
+    payload_dict['container'] = get_object_or_404(Container, id=payload.container)
+    payload_dict['step'] = get_object_or_404(Step, id=payload.step)
+    payload_dict['data_type'] = get_object_or_404(DataType, id=payload.data_type)
+    payload_dict['status'] = get_object_or_404(Status, code='rgsr')
+    payload_dict['element'] = get_object_or_404(Element, id=payload.element)
     prod = Product.objects.create(**payload_dict)
     prod.created_by = request.auth
     prod.modified_by = request.auth
@@ -354,14 +344,14 @@ def set_status(request, uid: str, status: str):
 
 # -------------------------------- Product Dependency --------------------------------
 
-@router.post("/product-dependency", response={201: ProductDenendencySchema}, auth=AuthBearer(), tags=['Product Dependency'])
-def created_product_dependency(request, payload: ProductDenendencySchemaIn):
+@router.post("/product-dependency", response={201: ProductDependencySchema}, auth=AuthBearer(), tags=['Product Dependency'])
+def created_product_dependency(request, payload: ProductDependencySchemaIn):
     """
     Creates a new product dependency in the system.
 
     Parameters:
     request (Request): The incoming request object.
-    payload (ProductDenendencySchemaIn): The product dependency data to be created. This includes the product ID and a list of dependency filepaths.
+    payload (ProductDependencySchemaIn): The product dependency data to be created. This includes the product ID and a list of dependency filepaths.
 
     Returns:
     tuple: A tuple containing the HTTP status code (201) and the created product dependency object.
@@ -376,8 +366,8 @@ def created_product_dependency(request, payload: ProductDenendencySchemaIn):
     return 201, dep_obj
 
 
-@router.get("/product-dependency/{uid}", response={200: List[ContainerRelationSchema]}, auth=AuthBearer(), tags=['Product Dependency'])
-def get_product_dependencu(request, uid):
+@router.get("/product-dependency/{uid}", response={200: ProductDependencySchema}, auth=AuthBearer(), tags=['Product Dependency'])
+def get_product_dependency(request, uid):
     """
     Retrieves a product dependency object based on the provided unique identifier.
 
@@ -388,5 +378,60 @@ def get_product_dependencu(request, uid):
     Returns:
     ProductDependency: The product dependency object with the matching unique identifier.
     """
-    relationship_obj = get_object_or_404(ProductDependency, id=uid)
-    return relationship_obj
+    product_obj = get_object_or_404(Product, id=uid)
+    dep_obj = get_object_or_404(ProductDependency, product=product_obj)
+    return 200, dep_obj
+
+# -------------------------------- Bundle --------------------------------
+
+@router.post("/bundle", response={201: BundleSchemaOut}, auth=AuthBearer(), tags=['Bundle'])
+def create_bundle(request, payload: BundleSchema):
+    """
+    Creates a new bundle in the system.
+
+    Parameters:
+    request (Request): The incoming request object.
+    payload (BundleSchema): The bundle data to be created. This includes the container, bundle type IDs, and product IDs.
+
+    Returns:
+    tuple: A tuple containing the HTTP status code (201) and the created bundle object.
+           If an error occurs during the creation process, a 400 status code and an error message are returned.
+    """
+    payload_dict = {}
+    payload_dict['container'] = get_object_or_404(Container, id=payload.container)
+    payload_dict['bundle_type'] = get_object_or_404(BundleType, id=payload.bundle_type)
+    payload_dict['status'] = get_object_or_404(Status, code='rgsr')
+    bdl = Bundle.objects.create(**payload_dict)
+    products = Product.objects.filter(id__in=payload.products)
+    bdl.products.set(products)
+    bdl.created_by = request.auth
+    bdl.modified_by = request.auth
+    bdl.save()
+    return 201, bdl
+
+@router.patch("/bundle/{uid}", response={200: BundleSchemaOut}, auth=AuthBearer(), tags=['Bundle'])
+def update_bundle(request, uid, payload: BundleSchema):
+    """
+    Updates an existing relationship between containers.
+
+    Parameters:
+    request (Request): The incoming request object.
+    uid (str): The unique identifier of the relationship to be updated.
+    payload (ContainerRelationSchema): The updated relationship data. This includes the IDs of the to_containers.
+
+    Returns:
+    ContainerRelation: The updated relationship object.
+    """
+    bdl = get_object_or_404(Bundle, id=uid)
+    products = Product.objects.filter(id__in=payload.products)
+    bdl.products.set(products)
+    bdl.modified_by = request.auth
+    bdl.save()
+    return 200, bdl
+
+@router.get("/bundle", response={200: List[BundleSchemaOut]}, auth=AuthBearer(), tags=['Bundle'])
+def get_bundles(request):
+    query_params = build_filters(request.GET)
+    if query_params:
+        return Bundle.objects.filter(**query_params)
+    return Bundle.objects.all()

@@ -1,5 +1,5 @@
 from ninja import ModelSchema
-from .models import ContainerType, Status, Element, DataType, Step, RelationType
+from .models import ContainerType, Status, Element, DataType, Step, RelationType, BundleType
 
 
 class ContainerTypeSchema(ModelSchema):
@@ -35,5 +35,11 @@ class StepSchema(ModelSchema):
 class RelationTypeSchema(ModelSchema):
     class Meta:
         model = RelationType
+        fields = ["id" ,"code", "label"]
+        fields_optional = '__all__'
+
+class BundleTypeSchema(ModelSchema):
+    class Meta:
+        model = BundleType
         fields = ["id" ,"code", "label"]
         fields_optional = '__all__'
