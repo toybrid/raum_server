@@ -2,8 +2,8 @@ from django.shortcuts import get_object_or_404
 from ninja import Router
 from ninja.pagination import paginate
 from typing import List
-from core.models import ContainerType, Status, Element, DataType, Step, RelationType
-from core.schemas import ContainerTypeSchema, StatusSchema, ElementSchema, DataTypeSchema, StepSchema, RelationTypeSchema
+from core.models import ContainerType, Status, Element, DataType, Step, RelationType, BundleType
+from core.schemas import ContainerTypeSchema, StatusSchema, ElementSchema, DataTypeSchema, StepSchema, RelationTypeSchema, BundleTypeSchema
 from helpers.utils import build_filters
 from account.utils import AuthBearer
 
@@ -140,3 +140,22 @@ def get_relation_types(request):
     if query_params:
         return RelationType.objects.filter(**query_params)
     return RelationType.objects.all()
+
+@router.get("/bundle-type", response={200:List[BundleTypeSchema]}, auth=AuthBearer(), tags=['core'])
+@paginate
+def get_bundle_types(request):
+    """
+    Retrieve a list of RelationType objects.
+
+    This function retrieves all RelationType objects from the database or filters them based on the provided query parameters.
+
+    Parameters:
+    request (Request): The request object containing the query parameters.
+
+    Returns:
+    QuerySet: A QuerySet of RelationType objects.
+    """
+    query_params = build_filters(request.GET)
+    if query_params:
+        return BundleType.objects.filter(**query_params)
+    return BundleType.objects.all()
