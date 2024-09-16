@@ -430,6 +430,7 @@ def update_bundle(request, uid, payload: BundleSchema):
     return 200, bdl
 
 @router.get("/bundle", response={200: List[BundleSchemaOut]}, auth=AuthBearer(), tags=['Bundle'])
+@paginate
 def get_bundles(request):
     query_params = build_filters(request.GET)
     if query_params:
