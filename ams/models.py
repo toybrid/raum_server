@@ -109,11 +109,12 @@ class Bundle(RaumBaseClass):
                 self.version = next_version
             except self.DoesNotExist:
                 self.version = 1
-        self.slug = f'{self.container.project.code}/{self.container.code}/{self.bundle_type.code}/{self.version}'
+        self.slug = f'{self.container.project.code}/{self.container.code}/{self.step.code}/{self.bundle_type.code}/{self.version}'
 
         super(Bundle, self).save(*args, **kwargs)
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     container = models.ForeignKey(Container, on_delete=models.CASCADE)
+    step = models.ForeignKey(Step, on_delete=models.SET_NULL, null=True)
     bundle_type = models.ForeignKey(BundleType, on_delete=models.SET_NULL, null=True)
     status = models.ForeignKey(Status, on_delete=models.SET_NULL, null=True)
     version = models.IntegerField(null=True, blank=True, default=0)

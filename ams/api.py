@@ -399,6 +399,7 @@ def create_bundle(request, payload: BundleSchema):
     """
     payload_dict = {}
     payload_dict['container'] = get_object_or_404(Container, id=payload.container)
+    payload_dict['step'] = get_object_or_404(Step, id=payload.step)
     payload_dict['bundle_type'] = get_object_or_404(BundleType, id=payload.bundle_type)
     payload_dict['status'] = get_object_or_404(Status, code='rgsr')
     bdl = Bundle.objects.create(**payload_dict)
