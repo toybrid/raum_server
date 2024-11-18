@@ -97,12 +97,13 @@ class ProductDependency(RaumBaseClass):
 
 class Bundle(RaumBaseClass):
     class Meta:
-        unique_together = ('container','bundle_type','version')
+        unique_together = ('container','step','bundle_type','version')
     def save(self, *args, **kwargs):
         if not self.version or self.version==0:
             try:
                 latest_instance = Bundle.objects.filter(
                                                     container = self.container,
+                                                    step = self.step,
                                                     bundle_type = self.bundle_type,
                                                     ).latest('created_at')
                 next_version = latest_instance.version + 1

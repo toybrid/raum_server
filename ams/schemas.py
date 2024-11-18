@@ -1,10 +1,12 @@
 from ninja import ModelSchema, Schema
-from typing import List, Optional, ClassVar
-from uuid import UUID
+from typing import List, Optional, Union
 from datetime import datetime
+from uuid import UUID
 from .models import Project, Container, ContainerRelation, Product, ProductDependency, Bundle
-from core.schemas import RelationTypeSchema
-from account.schemas import UserSchemaOut
+from core.schemas import (
+                        RelationTypeSchema, ContainerTypeSchema, ElementSchema, 
+                        DataTypeSchema, StepSchema, BundleTypeSchema, StatusSchema,
+                        )
 
 class ProjectSchema(ModelSchema):
     class Meta:
@@ -12,10 +14,30 @@ class ProjectSchema(ModelSchema):
         fields = '__all__'
         fields_optional = '__all__'
 
-class ContainerSchema(ModelSchema):
+class ProjectMinSchema(ModelSchema):
+    class Meta:
+        model = Project
+        fields = ['id', 'code', 'label', 'client_name']
+        fields_optional = '__all__'
+
+class ContainerInSchema(ModelSchema):
     class Meta:
         model = Container
         fields = '__all__'
+        fields_optional = '__all__'
+
+class ContainerSchema(ModelSchema):
+    project: ProjectMinSchema
+    container_type: ContainerTypeSchema
+    class Meta:
+        model = Container
+        fields = '__all__'
+        fields_optional = '__all__'
+
+class ContainerMinSchema(ModelSchema):
+    class Meta:
+        model = Container
+        fields = ['id', 'code', 'client_name', 'frame_range']
         fields_optional = '__all__'
 
 class ContainerRelationSchema(ModelSchema):
@@ -34,6 +56,16 @@ class ContainerRelationSchemaOut(ModelSchema):
         fields_optional = '__all__'
 
 class ProductSchema(ModelSchema):
+    element: ElementSchema
+    data_type: DataTypeSchema
+    step: StepSchema
+    status: StatusSchema
+    class Meta:
+        model = Product
+        fields = "__all__"
+        fields_optional = '__all__'
+
+class ProductInSchema(ModelSchema):
     class Meta:
         model = Product
         fields = "__all__"
@@ -50,7 +82,7 @@ class ProductDependencySchema(ModelSchema):
 
 
 class ProductDependencySchemaIn(Schema):
-    product: Optional[UUID]
+    product: Optional["UUID"]
     dependencies: List[str]
 
 class BundleSchema(ModelSchema):
@@ -60,8 +92,14 @@ class BundleSchema(ModelSchema):
         fields_optional = '__all__'
 
 class BundleSchemaOut(ModelSchema):
+    bundle_type: BundleTypeSchema
     products: List[ProductSchema]
+    status: StatusSchema
     class Meta:
         model = Bundle
         fields = "__all__"
         fields_optional = '__all__'
+
+class QuerySchema(Schema):
+    filters: Optional[dict] = {}
+    sort: Optional[str] = None
