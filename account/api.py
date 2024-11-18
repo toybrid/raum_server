@@ -9,6 +9,7 @@ from ninja import Router
 from .schemas import UserSchema, UserSchemaOut, TokenSchema, LoginSchema
 from ams.schemas import QuerySchema
 from .import utils
+from helpers.utils import generic_get
 from account.models import User
 from account.utils import AuthBearer
 from ninja.pagination import paginate
@@ -75,14 +76,4 @@ def get_users(request, payload: QuerySchema):
     Returns:
     List[UserSchemaOut]: A list of user objects based on the query parameters.
     """
-    payload_dict = payload.dict()
-    filter_q = Q()
-    sort_value = None
-    if payload_dict.get('filters'):
-        filter_q = Q(**payload_dict['filters'])
-
-    if payload_dict.get('sort'):
-        sort_value = payload_dict['sort']
-
-    container_data = User.objects.filter(filter_q).order_by(sort_value)
-    return container_data
+    return generic_get(User, payload)

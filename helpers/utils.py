@@ -21,7 +21,7 @@ def generic_get(model_object, payload):
     if payload_dict.get('sort'):
         sort_value = payload_dict['sort']
 
-    container_data = model_object.objects.filter(filter_q).order_by(sort_value)
+    container_data = model_object.objects.filter(filter_q).order_by(*sort_value)
     return container_data
 
 def generic_get_with_prefetch(model_object, prefetch_list, payload):
@@ -33,5 +33,5 @@ def generic_get_with_prefetch(model_object, prefetch_list, payload):
     if payload_dict.get('sort'):
         sort_value = payload_dict['sort']
 
-    container_data = model_object.objects.prefetch_related(*prefetch_list).filter(filter_q).order_by(sort_value)
+    container_data = model_object.objects.prefetch_related(*prefetch_list).filter(filter_q).order_by(*sort_value)
     return container_data

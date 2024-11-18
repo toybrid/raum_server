@@ -146,4 +146,4 @@ class BundleSchemaOut(ModelSchema):
 
 class QuerySchema(Schema):
     filters: Optional[dict] = {}
-    sort: Optional[str] = None
+    sort: Optional[List[str]] = None
