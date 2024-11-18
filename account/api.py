@@ -4,14 +4,14 @@ from django.contrib.auth import authenticate
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import Group
+from django.db.models import Q
 from ninja import Router
 from .schemas import UserSchema, UserSchemaOut, TokenSchema, LoginSchema
-from helpers.schemas import ErrorSchema
+from ams.schemas import QuerySchema
 from .import utils
 from account.models import User
 from account.utils import AuthBearer
 from ninja.pagination import paginate
-from helpers.utils import build_filters
 
 router = Router()
 
@@ -63,9 +63,9 @@ def login(request, payload: LoginSchema):
         token = utils.get_or_create_token(user)
         return token
 
-@router.get("/get-users", response={200:List[UserSchemaOut]}, auth=AuthBearer(), tags=['User'])
+@router.post("/get-users", response={201:List[UserSchemaOut]}, auth=AuthBearer(), tags=['User'])
 @paginate
-def get_users(request):
+def get_users(request, payload: QuerySchema):
     """
     Retrieves a list of users based on the provided query parameters.
 
@@ -75,7 +75,14 @@ def get_users(request):
     Returns:
     List[UserSchemaOut]: A list of user objects based on the query parameters.
     """
-    query_params = build_filters(request.GET)
-    if query_params:
-        return User.objects.filter(**query_params)
-    return User.objects.all()
+    payload_dict = payload.dict()
+    filter_q = Q()
+    sort_value = None
+    if payload_dict.get('filters'):
+        filter_q = Q(**payload_dict['filters'])
+
+    if payload_dict.get('sort'):
+        sort_value = payload_dict['sort']
+
+    container_data = User.objects.filter(filter_q).order_by(sort_value)
+    return container_data

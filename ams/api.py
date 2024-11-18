@@ -1,7 +1,6 @@
 from typing import List
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from django.db.models import Q
 from ninja import Router
 from ninja.pagination import paginate
 from ams.models import Project, Container, ContainerRelation, Product, ProductDependency, Bundle
@@ -11,7 +10,7 @@ from ams.schemas import (
                     ContainerRelationSchema, ProductSchema, ContainerRelationSchemaOut,
                     ProductDependencySchema, ProductDependencySchemaIn, BundleSchema, BundleSchemaOut
                     )
-from helpers.utils import build_filters
+from helpers.utils import generic_get, generic_get_with_prefetch
 from account.utils import AuthBearer
 from pprint import pprint
 
@@ -73,17 +72,7 @@ def get_projects(request, payload: QuerySchema):
     Returns:
     List[ProjectSchema]: A list of project objects. If no query parameters are provided, all projects are returned.
     """
-    payload_dict = payload.dict()
-    filter_q = Q()
-    sort_value = '-created_at'
-    if payload_dict.get('filters'):
-        filter_q = Q(**payload_dict['filters'])
-
-    if payload_dict.get('sort'):
-        sort_value = payload_dict['sort']
-
-    container_data = Project.objects.filter(filter_q).order_by(sort_value)
-    return container_data
+    return generic_get(Project, payload)
 
 @router.get("/project-by-code/{code}", response={200:ProjectSchema}, auth=AuthBearer(), tags=['Project'])
 def get_project_by_code(request, code):
@@ -160,17 +149,8 @@ def get_containers(request, payload: QuerySchema):
     Returns:
     List[ContainerSchema]: A list of container objects. If no query parameters are provided, all containers are returned.
     """
-    payload_dict = payload.dict()
-    filter_q = Q()
-    sort_value = '-created_at'
-    if payload_dict.get('filters'):
-        filter_q = Q(**payload_dict['filters'])
-
-    if payload_dict.get('sort'):
-        sort_value = payload_dict['sort']
-
-    container_data = Container.objects.filter(filter_q).order_by(sort_value)
-    return container_data
+    prefetch_list = ['container_type']
+    return generic_get_with_prefetch(Container, prefetch_list, payload)
 
 @router.get("/container-by-code/{code}", response={200:ContainerSchema}, auth=AuthBearer(), tags=['Container'])
 def get_container_by_code(request, code):
@@ -305,17 +285,8 @@ def get_products(request, payload: QuerySchema):
     Returns:
     List[ProductSchema]: A list of product objects. If no query parameters are provided, all products are returned.
     """
-    payload_dict = payload.dict()
-    filter_q = Q()
-    sort_value = '-created_at'
-    if payload_dict.get('filters'):
-        filter_q = Q(**payload_dict['filters'])
-
-    if payload_dict.get('sort'):
-        sort_value = payload_dict['sort']
-
-    product_data = Product.objects.filter(filter_q).order_by(sort_value)
-    return product_data
+    prefetch_list = ['container','step','data_type','status','element']
+    return generic_get_with_prefetch(Product, prefetch_list, payload)
 
 
 @router.patch("/product/{uid}", response={200:ProductSchema}, auth=AuthBearer(), tags=['Product'])
@@ -455,14 +426,5 @@ def update_bundle(request, uid, payload: BundleSchema):
 @router.post("/bundle-search", response={201: List[BundleSchemaOut]}, auth=AuthBearer(), tags=['Bundle'])
 @paginate
 def get_bundles(request, payload: QuerySchema):
-    payload_dict = payload.dict()
-    filter_q = Q()
-    sort_value = '-created_at'
-    if payload_dict.get('filters'):
-        filter_q = Q(**payload_dict['filters'])
-
-    if payload_dict.get('sort'):
-        sort_value = payload_dict['sort']
-        
-    product_data = Bundle.objects.filter(filter_q).order_by(sort_value)
-    return product_data
+    prefetch_list = ['step','bundle_type','status']
+    return generic_get_with_prefetch(Bundle, prefetch_list, payload)
