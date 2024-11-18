@@ -14,12 +14,6 @@ class ProjectSchema(ModelSchema):
         fields = '__all__'
         fields_optional = '__all__'
 
-class ProjectMinSchema(ModelSchema):
-    class Meta:
-        model = Project
-        fields = ['id', 'code', 'label', 'client_name']
-        fields_optional = '__all__'
-
 class ContainerInSchema(ModelSchema):
     class Meta:
         model = Container
@@ -27,18 +21,24 @@ class ContainerInSchema(ModelSchema):
         fields_optional = '__all__'
 
 class ContainerSchema(ModelSchema):
-    project: ProjectMinSchema
-    container_type: ContainerTypeSchema
+    container_type: dict
     class Meta:
         model = Container
         fields = '__all__'
         fields_optional = '__all__'
 
-class ContainerMinSchema(ModelSchema):
-    class Meta:
-        model = Container
-        fields = ['id', 'code', 'client_name', 'frame_range']
-        fields_optional = '__all__'
+    @staticmethod
+    def resolve_container_type(obj):
+        return {
+            'code':obj.container_type.code,
+            'id': obj.container_type.id,
+                }
+    @staticmethod
+    def resolve_project(obj):
+        return {
+            'code':obj.project.code,
+            'id': obj.project.id,
+                }
 
 class ContainerRelationSchema(ModelSchema):
     class Meta:
@@ -56,14 +56,39 @@ class ContainerRelationSchemaOut(ModelSchema):
         fields_optional = '__all__'
 
 class ProductSchema(ModelSchema):
-    element: ElementSchema
-    data_type: DataTypeSchema
-    step: StepSchema
-    status: StatusSchema
+    element: dict
+    data_type: dict
+    step: dict
+    status: dict
     class Meta:
         model = Product
         fields = "__all__"
         fields_optional = '__all__'
+
+    @staticmethod
+    def resolve_element(obj):
+        return {
+            'code':obj.element.code,
+            'id': obj.element.id,
+                }
+    @staticmethod
+    def resolve_data_type(obj):
+        return {
+            'code':obj.data_type.code,
+            'id': obj.data_type.id,
+                }
+    @staticmethod
+    def resolve_step(obj):
+        return {
+            'code':obj.step.code,
+            'id': obj.step.id,
+                }
+    @staticmethod
+    def resolve_status(obj):
+        return {
+            'code':obj.status.code,
+            'id': obj.status.id,
+                }
 
 class ProductInSchema(ModelSchema):
     class Meta:
@@ -92,14 +117,33 @@ class BundleSchema(ModelSchema):
         fields_optional = '__all__'
 
 class BundleSchemaOut(ModelSchema):
-    bundle_type: BundleTypeSchema
-    products: List[ProductSchema]
-    status: StatusSchema
+    bundle_type: dict
+    status: dict
+    step: dict
     class Meta:
         model = Bundle
         fields = "__all__"
         fields_optional = '__all__'
 
+    @staticmethod
+    def resolve_status(obj):
+        return {
+            'code':obj.status.code,
+            'id': obj.status.id,
+                }
+    @staticmethod
+    def resolve_bundle_type(obj):
+        return {
+            'code':obj.bundle_type.code,
+            'id': obj.bundle_type.id,
+                }
+    @staticmethod
+    def resolve_step(obj):
+        return {
+            'code':obj.step.code,
+            'id': obj.step.id,
+                }
+
 class QuerySchema(Schema):
     filters: Optional[dict] = {}
-    sort: Optional[str] = None
+    sort: Optional[List[str]] = None

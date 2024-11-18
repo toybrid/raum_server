@@ -1,18 +1,18 @@
-from django.shortcuts import get_object_or_404
 from ninja import Router
 from ninja.pagination import paginate
 from typing import List
 from core.models import ContainerType, Status, Element, DataType, Step, RelationType, BundleType
 from core.schemas import ContainerTypeSchema, StatusSchema, ElementSchema, DataTypeSchema, StepSchema, RelationTypeSchema, BundleTypeSchema
-from helpers.utils import build_filters
+from ams.schemas import QuerySchema
+from helpers.utils import generic_get
 from account.utils import AuthBearer
 
 
 router = Router()
 
-@router.get("/container-type", response={200:List[ContainerTypeSchema]}, auth=AuthBearer(), tags=['core'])
+@router.post("/container-type", response={201:List[ContainerTypeSchema]}, auth=AuthBearer(), tags=['core'])
 @paginate
-def get_container_types(request):
+def get_container_types(request, payload: QuerySchema):
     """
     Retrieve a list of ContainerType objects.
 
@@ -24,31 +24,12 @@ def get_container_types(request):
     Returns:
     QuerySet: A QuerySet of ContainerType objects.
     """
-    query_params = build_filters(request.GET)
-    if query_params:
-        return ContainerType.objects.filter(**query_params)
-    return ContainerType.objects.all()
+    return generic_get(ContainerType, payload)
 
-@router.get("/container-type-by-code/{code}", response={200:ContainerTypeSchema}, auth=AuthBearer(), tags=['core'])
-def get_container_type_by_code(request, code):
-    """
-    Retrieve a single ContainerType object by its code.
 
-    This function retrieves a single ContainerType object from the database based on the provided code.
-
-    Parameters:
-    request (Request): The request object.
-    code (str): The code of the ContainerType object to retrieve.
-
-    Returns:
-    ContainerType: The requested ContainerType object.
-    """
-    container_type = get_object_or_404(ContainerType, code=code)
-    return container_type
-
-@router.get("/status", response={200:List[StatusSchema]}, auth=AuthBearer(), tags=['core'])
+@router.post("/status", response={201:List[StatusSchema]}, auth=AuthBearer(), tags=['core'])
 @paginate
-def get_statuses(request):
+def get_statuses(request, payload: QuerySchema):
     """
     Retrieve a list of Status objects.
 
@@ -60,14 +41,11 @@ def get_statuses(request):
     Returns:
     QuerySet: A QuerySet of Status objects.
     """
-    query_params = build_filters(request.GET)
-    if query_params:
-        return Status.objects.filter(**query_params)
-    return Status.objects.all()
+    return generic_get(Status, payload)
 
-@router.get("/element", response={200:List[ElementSchema]}, auth=AuthBearer(), tags=['core'])
+@router.post("/element", response={201:List[ElementSchema]}, auth=AuthBearer(), tags=['core'])
 @paginate
-def get_elements(request):
+def get_elements(request, payload: QuerySchema):
     """
     Retrieve a list of Element objects.
 
@@ -79,14 +57,11 @@ def get_elements(request):
     Returns:
     QuerySet: A QuerySet of Element objects.
     """
-    query_params = build_filters(request.GET)
-    if query_params:
-        return Element.objects.filter(**query_params)
-    return Element.objects.all()
+    return generic_get(Element, payload)
 
-@router.get("/data-type", response={200:List[DataTypeSchema]}, auth=AuthBearer(), tags=['core'])
+@router.post("/data-type", response={201:List[DataTypeSchema]}, auth=AuthBearer(), tags=['core'])
 @paginate
-def get_data_types(request):
+def get_data_types(request, payload: QuerySchema):
     """
     Retrieve a list of DataType objects.
 
@@ -98,14 +73,11 @@ def get_data_types(request):
     Returns:
     QuerySet: A QuerySet of DataType objects.
     """
-    query_params = build_filters(request.GET)
-    if query_params:
-        return DataType.objects.filter(**query_params)
-    return DataType.objects.all()
+    return generic_get(DataType, payload)
 
-@router.get("/step", response={200:List[StepSchema]}, auth=AuthBearer(), tags=['core'])
+@router.post("/step", response={201:List[StepSchema]}, auth=AuthBearer(), tags=['core'])
 @paginate
-def get_steps(request):
+def get_steps(request, payload: QuerySchema):
     """
     Retrieve a list of Step objects.
 
@@ -117,14 +89,11 @@ def get_steps(request):
     Returns:
     QuerySet: A QuerySet of Step objects.
     """
-    query_params = build_filters(request.GET)
-    if query_params:
-        return Step.objects.filter(**query_params)
-    return Step.objects.all()
+    return generic_get(Step, payload)
 
-@router.get("/relation-type", response={200:List[RelationTypeSchema]}, auth=AuthBearer(), tags=['core'])
+@router.post("/relation-type", response={201:List[RelationTypeSchema]}, auth=AuthBearer(), tags=['core'])
 @paginate
-def get_relation_types(request):
+def get_relation_types(request, payload: QuerySchema):
     """
     Retrieve a list of RelationType objects.
 
@@ -136,14 +105,11 @@ def get_relation_types(request):
     Returns:
     QuerySet: A QuerySet of RelationType objects.
     """
-    query_params = build_filters(request.GET)
-    if query_params:
-        return RelationType.objects.filter(**query_params)
-    return RelationType.objects.all()
+    return generic_get(RelationType, payload)
 
-@router.get("/bundle-type", response={200:List[BundleTypeSchema]}, auth=AuthBearer(), tags=['core'])
+@router.post("/bundle-type", response={201:List[BundleTypeSchema]}, auth=AuthBearer(), tags=['core'])
 @paginate
-def get_bundle_types(request):
+def get_bundle_types(request, payload: QuerySchema):
     """
     Retrieve a list of RelationType objects.
 
@@ -155,7 +121,4 @@ def get_bundle_types(request):
     Returns:
     QuerySet: A QuerySet of RelationType objects.
     """
-    query_params = build_filters(request.GET)
-    if query_params:
-        return BundleType.objects.filter(**query_params)
-    return BundleType.objects.all()
+    return generic_get(BundleType, payload)
