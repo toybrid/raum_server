@@ -1,18 +1,19 @@
 from typing import List
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.db.models import Q
 from ninja import Router
 from ninja.pagination import paginate
 from ams.models import Project, Container, ContainerRelation, Product, ProductDependency, Bundle
 from core.models import ContainerType, RelationType, Step, Element, DataType, Status, BundleType
 from ams.schemas import (
-                    ProjectSchema, ContainerSchema, 
+                    ProjectSchema, ContainerSchema, QuerySchema, ContainerInSchema, ProductInSchema,
                     ContainerRelationSchema, ProductSchema, ContainerRelationSchemaOut,
                     ProductDependencySchema, ProductDependencySchemaIn, BundleSchema, BundleSchemaOut
                     )
 from helpers.utils import build_filters
 from account.utils import AuthBearer
-
+from pprint import pprint
 
 router = Router()
 
@@ -60,9 +61,9 @@ def update_project(request, uid: str, payload: ProjectSchema):
     return project
 
 
-@router.get("/project", response={200:List[ProjectSchema]}, auth=AuthBearer(), tags=['Project'])
+@router.post("/project-search", response={201:List[ProjectSchema]}, auth=AuthBearer(), tags=['Project'])
 @paginate
-def get_projects(request):
+def get_projects(request, payload: QuerySchema):
     """
     Retrieves a list of projects based on the provided query parameters.
 
@@ -72,10 +73,10 @@ def get_projects(request):
     Returns:
     List[ProjectSchema]: A list of project objects. If no query parameters are provided, all projects are returned.
     """
-    query_params = build_filters(request.GET)
-    if query_params:
-        return Project.objects.filter(**query_params)
-    return Project.objects.all()
+    payload_dict = payload.dict()
+    filter_q = Q(**payload_dict['filters'])
+    container_data = Project.objects.filter(filter_q).order_by(payload_dict['sort'])
+    return container_data
 
 @router.get("/project-by-code/{code}", response={200:ProjectSchema}, auth=AuthBearer(), tags=['Project'])
 def get_project_by_code(request, code):
@@ -95,7 +96,7 @@ def get_project_by_code(request, code):
 # -------------------------------- Containers --------------------------------
 
 @router.post("/container", response={201: ContainerSchema}, auth=AuthBearer(), tags=['Container'])
-def create_container(request, payload: ContainerSchema):
+def create_container(request, payload: ContainerInSchema):
     """
     Creates a new container in the system.
 
@@ -140,9 +141,9 @@ def update_container(request, uid: str, payload: ContainerSchema):
     return ctr
 
 
-@router.get("/container", response={200:List[ContainerSchema]}, auth=AuthBearer(), tags=['Container'])
+@router.post("/container-search", response={201:List[ContainerSchema]}, auth=AuthBearer(), tags=['Container'])
 @paginate
-def get_containers(request):
+def get_containers(request, payload: QuerySchema):
     """
     Retrieves a list of containers based on the provided query parameters.
 
@@ -152,12 +153,12 @@ def get_containers(request):
     Returns:
     List[ContainerSchema]: A list of container objects. If no query parameters are provided, all containers are returned.
     """
-    query_params = build_filters(request.GET)
-    if query_params:
-        return Container.objects.filter(**query_params)
-    return Container.objects.all()
+    payload_dict = payload.dict()
+    filter_q = Q(**payload_dict['filters'])
+    container_data = Container.objects.filter(filter_q).order_by(payload_dict['sort'])
+    return container_data
 
-@router.get("/container-by-code/{code}", response={200:ProjectSchema}, auth=AuthBearer(), tags=['Project'])
+@router.get("/container-by-code/{code}", response={200:ContainerSchema}, auth=AuthBearer(), tags=['Container'])
 def get_container_by_code(request, code):
     """
     Retrieves a container object based on the provided container code.
@@ -189,6 +190,8 @@ def create_container_realtion(request, payload: ContainerRelationSchema):
            If an error occurs during the creation process, a 400 status code and an error message are returned.
            If the relationship already exists, a 400 status code and an error message are returned.
     """
+    print("Payload: ", 'payload')
+    pprint(payload)
     from_container = get_object_or_404(Container, id=payload.from_container)
     to_containers = Container.objects.filter(id__in=payload.to_containers)
     relation_type = get_object_or_404(RelationType, id=payload.relation_type)
@@ -253,7 +256,7 @@ def get_container_relations(request, cid, rid):
 # -------------------------------- Product --------------------------------
 
 @router.post("/product", response={201: ProductSchema}, auth=AuthBearer(), tags=['Product'])
-def create_product(request, payload: ProductSchema):
+def create_product(request, payload: ProductInSchema):
     """
     Creates a new product in the system.
 
@@ -278,9 +281,9 @@ def create_product(request, payload: ProductSchema):
     return 201, prod
 
 
-@router.get("/product", response={200:List[ProductSchema]}, auth=AuthBearer(), tags=['Product'])
+@router.post("/product-search", response={201:List[ProductSchema]}, auth=AuthBearer(), tags=['Product'])
 @paginate
-def get_products(request):
+def get_products(request, payload: QuerySchema):
     """
     Retrieves a list of products based on the provided query parameters.
 
@@ -290,10 +293,10 @@ def get_products(request):
     Returns:
     List[ProductSchema]: A list of product objects. If no query parameters are provided, all products are returned.
     """
-    query_params = build_filters(request.GET)
-    if query_params:
-        return Product.objects.filter(**query_params)
-    return Product.objects.all()
+    payload_dict = payload.dict()
+    filter_q = Q(**payload_dict['filters'])
+    product_data = Product.objects.filter(filter_q).order_by(payload_dict['sort'])
+    return product_data
 
 
 @router.patch("/product/{uid}", response={200:ProductSchema}, auth=AuthBearer(), tags=['Product'])
@@ -430,10 +433,10 @@ def update_bundle(request, uid, payload: BundleSchema):
     bdl.save()
     return 200, bdl
 
-@router.get("/bundle", response={200: List[BundleSchemaOut]}, auth=AuthBearer(), tags=['Bundle'])
+@router.post("/bundle-search", response={201: List[BundleSchemaOut]}, auth=AuthBearer(), tags=['Bundle'])
 @paginate
-def get_bundles(request):
-    query_params = build_filters(request.GET)
-    if query_params:
-        return Bundle.objects.filter(**query_params)
-    return Bundle.objects.all()
+def get_bundles(request, payload: QuerySchema):
+    payload_dict = payload.dict()
+    filter_q = Q(**payload_dict['filters'])
+    product_data = Bundle.objects.filter(filter_q).order_by(payload_dict['sort'])
+    return product_data
