@@ -74,8 +74,15 @@ def get_projects(request, payload: QuerySchema):
     List[ProjectSchema]: A list of project objects. If no query parameters are provided, all projects are returned.
     """
     payload_dict = payload.dict()
-    filter_q = Q(**payload_dict['filters'])
-    container_data = Project.objects.filter(filter_q).order_by(payload_dict['sort'])
+    filter_q = Q()
+    sort_value = '-created_at'
+    if payload_dict.get('filters'):
+        filter_q = Q(**payload_dict['filters'])
+
+    if payload_dict.get('sort'):
+        sort_value = payload_dict['sort']
+
+    container_data = Project.objects.filter(filter_q).order_by(sort_value)
     return container_data
 
 @router.get("/project-by-code/{code}", response={200:ProjectSchema}, auth=AuthBearer(), tags=['Project'])
@@ -154,8 +161,15 @@ def get_containers(request, payload: QuerySchema):
     List[ContainerSchema]: A list of container objects. If no query parameters are provided, all containers are returned.
     """
     payload_dict = payload.dict()
-    filter_q = Q(**payload_dict['filters'])
-    container_data = Container.objects.filter(filter_q).order_by(payload_dict['sort'])
+    filter_q = Q()
+    sort_value = '-created_at'
+    if payload_dict.get('filters'):
+        filter_q = Q(**payload_dict['filters'])
+
+    if payload_dict.get('sort'):
+        sort_value = payload_dict['sort']
+
+    container_data = Container.objects.filter(filter_q).order_by(sort_value)
     return container_data
 
 @router.get("/container-by-code/{code}", response={200:ContainerSchema}, auth=AuthBearer(), tags=['Container'])
@@ -190,8 +204,6 @@ def create_container_realtion(request, payload: ContainerRelationSchema):
            If an error occurs during the creation process, a 400 status code and an error message are returned.
            If the relationship already exists, a 400 status code and an error message are returned.
     """
-    print("Payload: ", 'payload')
-    pprint(payload)
     from_container = get_object_or_404(Container, id=payload.from_container)
     to_containers = Container.objects.filter(id__in=payload.to_containers)
     relation_type = get_object_or_404(RelationType, id=payload.relation_type)
@@ -294,8 +306,15 @@ def get_products(request, payload: QuerySchema):
     List[ProductSchema]: A list of product objects. If no query parameters are provided, all products are returned.
     """
     payload_dict = payload.dict()
-    filter_q = Q(**payload_dict['filters'])
-    product_data = Product.objects.filter(filter_q).order_by(payload_dict['sort'])
+    filter_q = Q()
+    sort_value = '-created_at'
+    if payload_dict.get('filters'):
+        filter_q = Q(**payload_dict['filters'])
+
+    if payload_dict.get('sort'):
+        sort_value = payload_dict['sort']
+
+    product_data = Product.objects.filter(filter_q).order_by(sort_value)
     return product_data
 
 
@@ -437,6 +456,13 @@ def update_bundle(request, uid, payload: BundleSchema):
 @paginate
 def get_bundles(request, payload: QuerySchema):
     payload_dict = payload.dict()
-    filter_q = Q(**payload_dict['filters'])
-    product_data = Bundle.objects.filter(filter_q).order_by(payload_dict['sort'])
+    filter_q = Q()
+    sort_value = '-created_at'
+    if payload_dict.get('filters'):
+        filter_q = Q(**payload_dict['filters'])
+
+    if payload_dict.get('sort'):
+        sort_value = payload_dict['sort']
+        
+    product_data = Bundle.objects.filter(filter_q).order_by(sort_value)
     return product_data
