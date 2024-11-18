@@ -117,9 +117,9 @@ class BundleSchema(ModelSchema):
         fields_optional = '__all__'
 
 class BundleSchemaOut(ModelSchema):
-    # bundle_type: dict
-    # status: dict
-    # step: dict
+    bundle_type: dict
+    status: dict
+    step: dict
     class Meta:
         model = Bundle
         fields = "__all__"
