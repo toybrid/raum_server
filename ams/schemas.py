@@ -1,12 +1,12 @@
 from ninja import ModelSchema, Schema
-from typing import List, Optional, Union
-from datetime import datetime
+from typing import List, Optional,Any
 from uuid import UUID
 from .models import Project, Container, ContainerRelation, Product, ProductDependency, Bundle
 from core.schemas import (
-                        RelationTypeSchema, ContainerTypeSchema, ElementSchema, 
-                        DataTypeSchema, StepSchema, BundleTypeSchema, StatusSchema,
+                        RelationTypeSchema
                         )
+from helpers.schemas import CoreGenericSchema
+
 
 class ProjectSchema(ModelSchema):
     class Meta:
@@ -21,7 +21,7 @@ class ContainerInSchema(ModelSchema):
         fields_optional = '__all__'
 
 class ContainerSchema(ModelSchema):
-    container_type: dict
+    container_type: Optional[CoreGenericSchema] = None
     class Meta:
         model = Container
         fields = '__all__'
@@ -32,12 +32,6 @@ class ContainerSchema(ModelSchema):
         return {
             'code':obj.container_type.code,
             'id': obj.container_type.id,
-                }
-    @staticmethod
-    def resolve_project(obj):
-        return {
-            'code':obj.project.code,
-            'id': obj.project.id,
                 }
 
 class ContainerRelationSchema(ModelSchema):
@@ -56,10 +50,10 @@ class ContainerRelationSchemaOut(ModelSchema):
         fields_optional = '__all__'
 
 class ProductSchema(ModelSchema):
-    element: dict
-    data_type: dict
-    step: dict
-    status: dict
+    element: Optional[CoreGenericSchema] = None
+    data_type: Optional[CoreGenericSchema] = None
+    step: Optional[CoreGenericSchema] = None
+    status: Optional[CoreGenericSchema] = None
     class Meta:
         model = Product
         fields = "__all__"
@@ -117,9 +111,9 @@ class BundleSchema(ModelSchema):
         fields_optional = '__all__'
 
 class BundleSchemaOut(ModelSchema):
-    bundle_type: dict
-    status: dict
-    step: dict
+    bundle_type: Optional[CoreGenericSchema] = None
+    status: Optional[CoreGenericSchema] = None
+    step: Optional[CoreGenericSchema] = None
     class Meta:
         model = Bundle
         fields = "__all__"
@@ -143,7 +137,3 @@ class BundleSchemaOut(ModelSchema):
             'code':obj.step.code,
             'id': obj.step.id,
                 }
-
-class QuerySchema(Schema):
-    filters: Optional[dict] = {}
-    sort: Optional[List[str]] = None

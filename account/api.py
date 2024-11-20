@@ -7,7 +7,7 @@ from django.contrib.auth.models import Group
 from django.db.models import Q
 from ninja import Router
 from .schemas import UserSchema, UserSchemaOut, TokenSchema, LoginSchema
-from ams.schemas import QuerySchema
+from helpers.schemas import QuerySchema
 from .import utils
 from helpers.utils import generic_get
 from account.models import User
