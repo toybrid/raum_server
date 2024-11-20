@@ -6,11 +6,12 @@ from ninja.pagination import paginate
 from ams.models import Project, Container, ContainerRelation, Product, ProductDependency, Bundle
 from core.models import ContainerType, RelationType, Step, Element, DataType, Status, BundleType
 from ams.schemas import (
-                    ProjectSchema, ContainerSchema, QuerySchema, ContainerInSchema, ProductInSchema,
+                    ProjectSchema, ContainerSchema, ContainerInSchema, ProductInSchema,
                     ContainerRelationSchema, ProductSchema, ContainerRelationSchemaOut,
                     ProductDependencySchema, ProductDependencySchemaIn, BundleSchema, BundleSchemaOut
                     )
 from helpers.utils import generic_get, generic_get_with_prefetch
+from helpers.schemas import QuerySchema
 from account.utils import AuthBearer
 from pprint import pprint
 
@@ -36,7 +37,6 @@ def create_project(request, payload: ProjectSchema):
     project.modified_by = request.auth
     project.save()
     return 201, project
-
 
 @router.patch("/project/{uid}", response={200:ProjectSchema}, auth=AuthBearer(), tags=['Project'])
 def update_project(request, uid: str, payload: ProjectSchema):
@@ -68,6 +68,7 @@ def get_projects(request, payload: QuerySchema):
 
     Parameters:
     request (Request): The incoming request object.
+    payload (QuerySchema): The query parameters for filtering and sorting the projects.
 
     Returns:
     List[ProjectSchema]: A list of project objects. If no query parameters are provided, all projects are returned.
@@ -129,6 +130,7 @@ def update_container(request, uid: str, payload: ContainerSchema):
     Returns:
     Container: The updated container object.
     """
+    print('Entered update_container')
     ctr = get_object_or_404(Container, id=uid)
     ctr.client_name = payload.client_name
     ctr.frame_range = payload.frame_range
@@ -145,9 +147,13 @@ def get_containers(request, payload: QuerySchema):
 
     Parameters:
     request (Request): The incoming request object.
+    payload (QuerySchema): The query parameters for filtering and sorting the containers.
 
     Returns:
     List[ContainerSchema]: A list of container objects. If no query parameters are provided, all containers are returned.
+
+    The function uses the `paginate` decorator to handle pagination of the container results.
+    It also includes a prefetch list to improve query performance by pre-fetching related container type data.
     """
     prefetch_list = ['container_type']
     return generic_get_with_prefetch(Container, prefetch_list, payload)
@@ -281,9 +287,15 @@ def get_products(request, payload: QuerySchema):
 
     Parameters:
     request (Request): The incoming request object.
+    payload (QuerySchema): The query parameters for filtering and sorting the products.
 
     Returns:
     List[ProductSchema]: A list of product objects. If no query parameters are provided, all products are returned.
+                         The function uses the `paginate` decorator to handle pagination of the product results.
+                         It also includes a prefetch list to improve query performance by pre-fetching related product data.
+
+    The function uses the `paginate` decorator to handle pagination of the product results.
+    It also includes a prefetch list to improve query performance by pre-fetching related product data.
     """
     prefetch_list = ['container','step','data_type','status','element']
     return generic_get_with_prefetch(Product, prefetch_list, payload)
@@ -426,5 +438,17 @@ def update_bundle(request, uid, payload: BundleSchema):
 @router.post("/bundle-search", response={201: List[BundleSchemaOut]}, auth=AuthBearer(), tags=['Bundle'])
 @paginate
 def get_bundles(request, payload: QuerySchema):
+    """
+    Retrieves a list of bundles based on the provided query parameters.
+
+    Parameters:
+    request (Request): The incoming request object.
+    payload (QuerySchema): The query parameters for filtering and sorting the bundles.
+
+    Returns:
+    List[BundleSchemaOut]: A list of bundle objects. If no query parameters are provided, all bundles are returned.
+                            The function uses the `paginate` decorator to handle pagination of the bundle results.
+                            It also includes a prefetch list to improve query performance by pre-fetching related bundle data.
+    """
     prefetch_list = ['step','bundle_type','status']
     return generic_get_with_prefetch(Bundle, prefetch_list, payload)

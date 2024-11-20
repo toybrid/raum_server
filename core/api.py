@@ -3,7 +3,7 @@ from ninja.pagination import paginate
 from typing import List
 from core.models import ContainerType, Status, Element, DataType, Step, RelationType, BundleType
 from core.schemas import ContainerTypeSchema, StatusSchema, ElementSchema, DataTypeSchema, StepSchema, RelationTypeSchema, BundleTypeSchema
-from ams.schemas import QuerySchema
+from helpers.schemas import QuerySchema
 from helpers.utils import generic_get
 from account.utils import AuthBearer
 
