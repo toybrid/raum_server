@@ -130,7 +130,6 @@ def update_container(request, uid: str, payload: ContainerSchema):
     Returns:
     Container: The updated container object.
     """
-    print('Entered update_container')
     ctr = get_object_or_404(Container, id=uid)
     ctr.client_name = payload.client_name
     ctr.frame_range = payload.frame_range
@@ -407,6 +406,7 @@ def create_bundle(request, payload: BundleSchema):
     payload_dict['step'] = get_object_or_404(Step, id=payload.step)
     payload_dict['bundle_type'] = get_object_or_404(BundleType, id=payload.bundle_type)
     payload_dict['status'] = get_object_or_404(Status, code='rgsr')
+    payload_dict['version'] = payload.version
     bdl = Bundle.objects.create(**payload_dict)
     products = Product.objects.filter(id__in=payload.products)
     bdl.products.set(products)
