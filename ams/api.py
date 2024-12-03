@@ -407,6 +407,7 @@ def create_bundle(request, payload: BundleSchema):
     payload_dict['bundle_type'] = get_object_or_404(BundleType, id=payload.bundle_type)
     payload_dict['status'] = get_object_or_404(Status, code='rgsr')
     payload_dict['version'] = payload.version
+    payload_dict['description'] = payload.description
     bdl = Bundle.objects.create(**payload_dict)
     products = Product.objects.filter(id__in=payload.products)
     bdl.products.set(products)
@@ -430,6 +431,7 @@ def update_bundle(request, uid, payload: BundleSchema):
     """
     bdl = get_object_or_404(Bundle, id=uid)
     products = Product.objects.filter(id__in=payload.products)
+    bdl.description = payload.description
     bdl.products.set(products)
     bdl.modified_by = request.auth
     bdl.save()
@@ -452,3 +454,30 @@ def get_bundles(request, payload: QuerySchema):
     """
     prefetch_list = ['step','bundle_type','status']
     return generic_get_with_prefetch(Bundle, prefetch_list, payload)
+
+@router.patch("/bundle/{uid}/{status}", response={200:BundleSchemaOut}, auth=AuthBearer(), tags=['Bundle'])
+def set_bundle_status(request, uid: str, status: str):
+    """
+    Updates the status of an existing product in the system.
+
+    Parameters:
+    request (Request): The incoming request object.
+    uid (str): The unique identifier of the product to be updated.
+    status (str): The new status code for the product.
+
+    Returns:
+    Product: The updated product object.
+    """
+    if status == 'rgsr':
+        raise ValueError({'Status value cannot be set back to registered'})
+    
+    bundle_obj = get_object_or_404(Bundle, id=uid)
+    status_obj = get_object_or_404(Status, code=status)
+    bundle_obj.status = status_obj
+    bundle_obj.modified_by = request.auth
+    if status_obj.code == 'appr':
+        bundle_obj.approved_by = request.auth
+        bundle_obj.approved_at = timezone.now()
+
+    bundle_obj.save()
+    return bundle_obj
