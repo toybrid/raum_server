@@ -35,10 +35,10 @@ class ProductDependencyAdmin(admin.ModelAdmin):
     def get_connections(self,obj):
         return [input for input in obj.dependencies.all()]
     
-class BundleTypeAdmin(admin.ModelAdmin):
-    list_display = ['id', 'container','bundle_type', 'version', 'get_connections', 'modified_at']
-    list_filter = ['step', 'bundle_type']
-    search_fields = ['step__code', 'bundle_type__code', 'container__code']
+class BundleAdmin(admin.ModelAdmin):
+    list_display = ['id', 'container','bundle_type', 'version', 'status','description','get_connections', 'modified_at']
+    list_filter = ['step', 'status','bundle_type']
+    search_fields = ['step__code', 'bundle_type__code', 'container__code', 'status__code','description']
     list_per_page = 20
 
     def get_connections(self,obj):
@@ -50,4 +50,4 @@ admin.site.register(Container, ContainerAdmin)
 admin.site.register(Product, ProductAdmin)
 admin.site.register(ContainerRelation, ContainerRelationAdmin)
 admin.site.register(ProductDependency, ProductDependencyAdmin)
-admin.site.register(Bundle, BundleTypeAdmin)
+admin.site.register(Bundle, BundleAdmin)

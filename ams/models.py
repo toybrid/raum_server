@@ -54,7 +54,7 @@ class Product(RaumBaseClass):
         return self.slug
 
     def save(self, *args, **kwargs):
-        if not self.version:
+        if not self.version or self.version==0:
             try:
                 latest_instance = Product.objects.filter(
                                                     container = self.container,
@@ -119,6 +119,7 @@ class Bundle(RaumBaseClass):
     bundle_type = models.ForeignKey(BundleType, on_delete=models.SET_NULL, null=True)
     status = models.ForeignKey(Status, on_delete=models.SET_NULL, null=True)
     version = models.IntegerField(null=True, blank=True, default=0)
+    description = models.TextField(null=True, blank=True)
     slug = models.CharField(max_length=4096, null=True, blank=True, editable=False, unique=True)
     products = models.ManyToManyField(Product, related_name='%(class)s_products', blank=True)
     approved_at = models.DateTimeField(null=True, blank=True, editable=False)
