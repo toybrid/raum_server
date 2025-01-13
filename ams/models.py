@@ -47,7 +47,7 @@ class ContainerRelation(RaumBaseClass):
 
 class Product(RaumBaseClass):
     class Meta:
-        unique_together = ('container','step', 'element', 'data_type', 'lod', 'layer','version')
+        unique_together = ('container','step', 'element', 'data_type', 'lod', 'layer','version', 'extension')
         verbose_name_plural = 'Products'
 
     def __str__(self) -> str:
@@ -62,13 +62,14 @@ class Product(RaumBaseClass):
                                                     element = self.element,
                                                     data_type = self.data_type,
                                                     layer = self.layer,
-                                                    lod=self.lod
+                                                    lod=self.lod,
+                                                    extension=self.extension
                                                     ).latest('created_at')
                 next_version = latest_instance.version + 1
                 self.version = next_version
             except self.DoesNotExist:
                 self.version = 1
-        self.slug = f'{self.container.project.code}/{self.container.code}/{self.step.code}/{self.element.code}/{self.data_type.code}/{self.lod}/{self.layer}/{self.version}'
+        self.slug = f'{self.container.project.code}/{self.container.code}/{self.step.code}/{self.element.code}/{self.data_type.code}/{self.lod}/{self.layer}/{self.extension}/{self.version}'
 
         super(Product, self).save(*args, **kwargs)
 
