@@ -452,7 +452,7 @@ def get_bundles(request, payload: QuerySchema):
                             The function uses the `paginate` decorator to handle pagination of the bundle results.
                             It also includes a prefetch list to improve query performance by pre-fetching related bundle data.
     """
-    prefetch_list = ['step','bundle_type','status']
+    prefetch_list = ['step','bundle_type','status', 'products']
     return generic_get_with_prefetch(Bundle, prefetch_list, payload)
 
 @router.patch("/bundle/{uid}/{status}", response={200:BundleSchemaOut}, auth=AuthBearer(), tags=['Bundle'])
