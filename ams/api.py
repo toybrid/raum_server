@@ -480,4 +480,15 @@ def set_bundle_status(request, uid: str, status: str):
         bundle_obj.approved_at = timezone.now()
 
     bundle_obj.save()
+    updated_bundles = []
+    for product in bundle_obj.products.all():
+        product.status = status_obj
+        product.modified_by = request.auth
+        if status_obj.code == 'appr':
+            product.approved_by = request.auth
+            product.approved_at = timezone.now()
+        updated_bundles.append(product)
+
+    Product.objects.bulk_update(updated_bundles, ["status", "approved_by", "approved_at"])
+
     return bundle_obj

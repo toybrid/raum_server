@@ -77,3 +77,16 @@ def get_users(request, payload: QuerySchema):
     List[UserSchemaOut]: A list of user objects based on the query parameters.
     """
     return generic_get(User, payload)
+
+@router.get("/is-authorised", auth=AuthBearer(), tags=['User'])
+def is_authorised(request):
+    """
+    Checks if the user is authorised to access the API.
+
+    Parameters:
+    request (Request): The incoming request object.
+
+    Returns:
+    bool: True if the user is authorised, False otherwise.
+    """
+    return request.auth.username
