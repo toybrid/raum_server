@@ -149,7 +149,7 @@ class Container(TimeMixin, UpdateMixin):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='containers')
     code = models.CharField(max_length=128)
     client_name = models.CharField(max_length=64)
-    container_type = models.ForeignKey(ContainerType, on_delete=models.CASCADE, related_name='containers')
+    container_type = models.ForeignKey(ContainerType, on_delete=models.SET_NULL, blank=True, null=True,related_name='containers')
     frame_range = models.JSONField(null=True, blank=True, default=dict)
 
     updatable_fields = ['client_name', 'frame_range', 'container_type']
@@ -228,7 +228,8 @@ class Product(TimeMixin, UpdateMixin):
             super().save(*args, **kwargs)
 
     container = models.ForeignKey(Container, on_delete=models.CASCADE)
-    element = models.ForeignKey(Element, on_delete=models.CASCADE)
+    data_type = models.ForeignKey(DataType, on_delete=models.SET_NULL, null=True, blank=True)
+    element = models.ForeignKey(Element, on_delete=models.SET_NULL, null=True, blank=True)
     variant = models.CharField(max_length=128)
     component = models.CharField(max_length=64)
     layer = models.CharField(max_length=128)
@@ -276,9 +277,7 @@ class Bundle(TimeMixin):
 
     container = models.ForeignKey(Container, on_delete=models.CASCADE)
     task = models.CharField(max_length=64)
-    bundle_type = models.ForeignKey(BundleType, on_delete=models.SET_NULL, null=True)
+    bundle_type = models.ForeignKey(BundleType, on_delete=models.SET_NULL, null=True, blank=True)
     version = models.IntegerField(null=True, blank=True, default=0)
     description = models.TextField(null=True, blank=True)
     products = models.ManyToManyField(Product, related_name='%(class)s_products', blank=True)
-
-    m2m_fields = ['products']
