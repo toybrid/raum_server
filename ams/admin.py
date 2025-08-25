@@ -54,7 +54,7 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(Bundle)
 class BundleAdmin(admin.ModelAdmin):
-    list_display = ("id", "container","task","bundle_type", "version", "description", "updated_at", "created_at", "created_by", "updated_by")
+    list_display = ("id", "container","package","bundle_type", "version", "description", "updated_at", "created_at", "created_by", "updated_by")
     search_fields = ("bundle_type__code", "bundle_type__label")
     list_filter = ("bundle_type",)
     ordering = ("bundle_type__code",)

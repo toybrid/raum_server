@@ -1,6 +1,7 @@
 from django.db import models, transaction
 from django.conf import settings
 
+
 class TimeMixin(models.Model):
     '''
     Abstract base model to add created_at, updated_at, created_by, and updated_by fields.
@@ -230,6 +231,7 @@ class Product(TimeMixin, UpdateMixin):
     container = models.ForeignKey(Container, on_delete=models.CASCADE)
     data_type = models.ForeignKey(DataType, on_delete=models.SET_NULL, null=True, blank=True)
     element = models.ForeignKey(Element, on_delete=models.SET_NULL, null=True, blank=True)
+    status = models.ForeignKey(Status, on_delete=models.SET, null=True, blank=True)
     variant = models.CharField(max_length=128)
     component = models.CharField(max_length=64)
     layer = models.CharField(max_length=128)
@@ -254,7 +256,7 @@ class ProductDependency(TimeMixin):
 
 class Bundle(TimeMixin):
     class Meta:
-        unique_together = ('container','task','bundle_type','version')
+        unique_together = ('container','package','bundle_type','version')
 
     def save(self, *args, **kwargs):
         if not self.version or self.version == 0:
@@ -276,7 +278,7 @@ class Bundle(TimeMixin):
             super().save(*args, **kwargs)
 
     container = models.ForeignKey(Container, on_delete=models.CASCADE)
-    task = models.CharField(max_length=64)
+    package = models.CharField(max_length=64)
     bundle_type = models.ForeignKey(BundleType, on_delete=models.SET_NULL, null=True, blank=True)
     version = models.IntegerField(null=True, blank=True, default=0)
     description = models.TextField(null=True, blank=True)
