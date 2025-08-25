@@ -266,7 +266,7 @@ class Bundle(TimeMixin):
                     .select_for_update()
                     .filter(
                         container=self.container,
-                        task=self.task,
+                        task=self.package,
                         bundle_type=self.bundle_type,
                     )
                     .order_by('-version')
