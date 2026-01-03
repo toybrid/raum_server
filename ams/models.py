@@ -242,8 +242,10 @@ class Product(TimeMixin, UpdateMixin):
     version = models.IntegerField(null=True, blank=True, default=0)
     description = models.TextField(null=True, blank=True)
     metadata = models.JSONField(null=True, blank=True, default=dict)
+    approved_at = models.DateTimeField(null=True, blank=True, editable=False)
+    approved_by = models.CharField(max_length=64, blank=True, null=True)
 
-    updatable_fields = ['task', 'filepath', 'frame_range', 'metadata', "updated_by"]
+    updatable_fields = ['task', 'filepath', 'frame_range', 'metadata', "updated_by", 'status', 'description']
 
 
 class ProductDependency(TimeMixin):

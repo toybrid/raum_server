@@ -46,3 +46,8 @@ class ProductDependencySchema(ModelSchema):
     class Config:
         model = ProductDependency
         model_fields = "__all__"
+
+class ApproveProductsSchema(Schema):
+    product_ids: List[int]
+    username: str
+    status: str

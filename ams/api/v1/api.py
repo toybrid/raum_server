@@ -1,12 +1,13 @@
+from django.utils import timezone
 from typing import List
 from django.shortcuts import get_object_or_404
 from django.forms.models import model_to_dict
 from django.db.models import Q
-from django.db import transaction
 from ninja import Router
 from ninja.pagination import paginate
 from .schema import (
-    QuerySchema, CreateSchema, UpdateSchema, QueryIDSchema, BundleSchema, BundleQuerySchema, ProductDependencySchema
+    QuerySchema, CreateSchema, UpdateSchema, QueryIDSchema, BundleSchema, BundleQuerySchema, ProductDependencySchema,
+    ApproveProductsSchema
     )
 from ams.models import (
     Project, Container, Product, ContainerType, Element, DataType, BundleType, Bundle, Status, ProductDependency
@@ -129,3 +130,22 @@ def create_product_dependency(request, payload: CreateSchema):
 def get_product_dependency(request, uid:int):
     instance = ProductDependency.objects.filter(product=uid)[0]
     return 200, instance
+
+
+@router.patch("/set-status", response={200:dict, 201:dict, 400:dict}, tags=['AMS-CRUD'])
+def set_status(request, payload: ApproveProductsSchema):
+    status = get_object_or_404(Status, code=payload.status)
+    products = Product.objects.filter(id__in=payload.product_ids)
+
+    for product in products:
+        product.status = status
+        if status.code == 'approved':
+            product.approved_at =  timezone.now()
+            product.approved_by = payload.username
+    
+    # Bulk update to optimize database writes, this will not trigger django save() method or signals
+    # This is a direct change into database do not take care of any django specific logic
+    # Product.objects.bulk_update(products, ['status', 'approved_by'])
+    Product.objects.bulk_update(products, ['status', 'approved_at', 'approved_by'])
+
+    return 201, {'STATUS': 'SUCCESS', 'message': f'Approved {products.count()} products.'}
