@@ -98,6 +98,15 @@ class BundleType(TimeMixin):
     def __str__(self) -> str:
         return self.label
     
+class RelationType(TimeMixin):
+    class Meta:
+        verbose_name_plural = 'Relation Types'
+    code = models.CharField(max_length=64, unique=True)
+    label = models.CharField(max_length=64)
+
+    def __str__(self) -> str:
+        return self.label
+    
 class Project(TimeMixin, UpdateMixin):
     """
     Represents a project entity with a unique code, label, and client name.
@@ -285,3 +294,11 @@ class Bundle(TimeMixin):
     version = models.IntegerField(null=True, blank=True, default=0)
     description = models.TextField(null=True, blank=True)
     products = models.ManyToManyField(Product, related_name='%(class)s_products', blank=True)
+
+class ContainerRelation(TimeMixin):
+    class Meta:
+        unique_together = ('from_container','relation_type')
+        verbose_name_plural = 'Container Relations'
+    from_container = models.ForeignKey(Container, on_delete=models.CASCADE)
+    relation_type = models.ForeignKey(RelationType, on_delete=models.CASCADE)
+    to_containers = models.ManyToManyField(Container, related_name='%(class)s_containers')

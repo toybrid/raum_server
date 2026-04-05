@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Project, ContainerType, Status, Element, DataType, BundleType, Container, Product, Bundle, ProductDependency
+from .models import Project, ContainerType, Status, Element, DataType, BundleType, Container, Product, Bundle, ProductDependency, RelationType, ContainerRelation
 
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
@@ -37,6 +37,12 @@ class BundleTypeAdmin(admin.ModelAdmin):
     search_fields = ("code", "label")
     ordering = ("code",)
 
+@admin.register(RelationType)
+class RelationTypeAdmin(admin.ModelAdmin):
+    list_display = ("id", "code", "label", "updated_at", "created_at", "created_by", "updated_by")
+    search_fields = ("code", "label")
+    ordering = ("code",)
+
 @admin.register(Container)
 class ContainerAdmin(admin.ModelAdmin):
     list_display = ("id", "code", "container_type", "updated_at", "created_at", "created_by", "updated_by")
@@ -70,6 +76,12 @@ class BundleAdmin(admin.ModelAdmin):
 class ProductDependencyAdmin(admin.ModelAdmin):
     list_display = ("id", "product")
     search_fields = ("id",)
+
+@admin.register(ContainerRelation)
+class ContainerRelationAdmin(admin.ModelAdmin):
+    list_display = ("id", "from_container", "relation_type")
+    search_fields = ("from_container__code", "relation_type__code")
+    list_filter = ("relation_type",)
 
 # Register your models here.
 admin.site.site_header = "RAUM Admin Portal"

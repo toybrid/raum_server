@@ -2,7 +2,7 @@
 
 from ninja import Schema, ModelSchema
 from typing import Optional, Dict, List, Union
-from ams.models import Bundle, Product, ProductDependency
+from ams.models import Bundle, Product, ProductDependency, ContainerRelation, RelationType, Container
 
 class QuerySchema(Schema):
     entity: str
@@ -51,3 +51,36 @@ class ApproveProductsSchema(Schema):
     product_ids: List[int]
     username: str
     status: str
+
+class RelationTypeSchema(ModelSchema):
+    class Meta:
+        model = RelationType
+        fields = ["id" ,"code", "label"]
+        fields_optional = '__all__'
+        
+class ContainerSchema(ModelSchema):
+    entity:str = "Container"
+    class Config:
+        model = Container
+        model_fields = "__all__"
+
+class ContainerRelationSchema(ModelSchema):
+    class Meta:
+        model = ContainerRelation
+        fields = "__all__"
+        fields_optional = '__all__'
+
+class ContainerRelationUpdateSchema(ModelSchema):
+    class Meta:
+        model = ContainerRelation
+        fields = ["updated_by", "to_containers"]
+        fields_optional = '__all__'
+
+class ContainerRelationSchemaOut(ModelSchema):
+    from_container: ContainerSchema
+    relation_type: RelationTypeSchema
+    to_containers: List[ContainerSchema]
+    class Meta:
+        model = ContainerRelation
+        fields = "__all__"
+        fields_optional = '__all__'
